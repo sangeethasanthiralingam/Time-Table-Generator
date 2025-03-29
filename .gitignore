@@ -1,0 +1,65 @@
+# Ignore Visual Studio specific files
+.vs/
+*.vscode/
+
+# Ignore build outputs
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs and debugging
+logs/
+*.log
+*.tlog
+*.pdb
+
+# Ignore NuGet packages
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Ignore environment settings
+.env
+secrets.json
+
+# Ignore compiled binaries
+*.dll
+*.exe
+
+# Ignore database files
+*.mdf
+*.ldf
+*.sdf
+
+# Ignore publish and deployment
+publish/
+app.publish/
+*.publishsettings
+
+# Ignore generated files
+Generated_Code/
+
+# Ignore Rider and JetBrains IDE files
+.idea/
+*.sln.iml
+
+# Ignore dependencies from npm (if applicable)
+node_modules/
+
+# Ignore Docker build files
+docker-compose.override.yml
+.dockerignore
+
+# Ignore ReSharper files
+_ReSharper.Caches/
+*.DotSettings.user
+
+# Ignore macOS and Linux system files
+.DS_Store
+*.swp

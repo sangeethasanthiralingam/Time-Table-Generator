@@ -1,0 +1,6 @@
+@Time_Table_Generator_HostAddress = http://localhost:5121
+
+GET {{Time_Table_Generator_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
