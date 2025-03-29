@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Time_Table_Generator.Models;
 
 namespace Time_Table_Generator
 {
@@ -14,6 +16,11 @@ namespace Time_Table_Generator
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Add MySQL database connection
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -26,7 +33,6 @@ namespace Time_Table_Generator
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
