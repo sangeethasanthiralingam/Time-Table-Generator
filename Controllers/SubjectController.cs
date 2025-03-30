@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 namespace Time_Table_Generator.Controllers
 {
@@ -30,12 +31,18 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Subject subject)
+        public IActionResult Create(CreateSubjectRequest request)
         {
-            if (subject == null) return BadRequest("Subject cannot be null.");
-            _context.Subjects.Add(subject);
+            if (request == null) return BadRequest("Subject cannot be null.");
+
+            var subjectEntity = new Subject()
+            {
+                Name = request.Name,
+            };
+
+            _context.Subjects.Add(subjectEntity);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = subject.Id }, subject);
+            return CreatedAtAction(nameof(GetById), new { id = subjectEntity.Id }, subjectEntity);
         }
 
         [HttpPut("{id}")]

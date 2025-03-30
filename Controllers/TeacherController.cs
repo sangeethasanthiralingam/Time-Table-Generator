@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 namespace Time_Table_Generator.Controllers
 {
@@ -30,13 +31,19 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Teacher teacher)
+        public IActionResult Create(CreateTeacherRequest request)
         {
-            if (teacher == null) return BadRequest("Teacher cannot be null.");
-            _context.Teachers.Add(teacher);
+            if (request == null) return BadRequest("Teacher cannot be null.");
+
+            var teacherEntity = new Teacher()
+            {
+                UserId = request.UserId,
+            };
+            _context.Teachers.Add(teacherEntity);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = teacher.Id }, teacher);
+            return CreatedAtAction(nameof(GetById), new { id = teacherEntity.Id }, teacherEntity);
         }
+
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, Teacher teacher)
@@ -58,7 +65,7 @@ namespace Time_Table_Generator.Controllers
             return NoContent();
         }
 
-        [HttpGet("classes-and-subjects/{id?}")]
+        /*[HttpGet("classes-and-subjects/{id?}")]
         public IActionResult GetClassesAndSubjects(int? id)
         {
             if (id.HasValue)
@@ -91,6 +98,6 @@ namespace Time_Table_Generator.Controllers
 
                 return Ok(teachers);
             }
-        }
+        }*/
     }
 }

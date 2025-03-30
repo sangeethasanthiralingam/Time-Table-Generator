@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 namespace Time_Table_Generator.Controllers
 {
@@ -30,12 +31,18 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Batch batch)
+        public IActionResult Create(CreateBatchRequest batch)
         {
             if (batch == null) return BadRequest("Batch cannot be null.");
-            _context.Batches.Add(batch);
+
+            var newBatch = new Batch()
+            {
+                Name = batch.Name,
+                ClassId = batch.ClassId,
+            };
+            _context.Batches.Add(newBatch);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = batch.Id }, batch);
+            return CreatedAtAction(nameof(GetById), new { id = newBatch.Id }, batch);
         }
 
         [HttpPut("{id}")]

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 namespace Time_Table_Generator.Controllers
 {
@@ -30,21 +31,28 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(IEnumerable<SubjectHour> subjectHours)
+        public IActionResult Create(IEnumerable<CreateSubjectHourRequest> requests)
         {
-            if (subjectHours == null || !subjectHours.Any())
+            if (requests == null || !requests.Any())
                 return BadRequest("SubjectHours cannot be null or empty.");
 
-            foreach (var subjectHour in subjectHours)
+            foreach (var request in requests)
             {
-                if (!_context.Subjects.Any(s => s.Id == subjectHour.SubjectId))
-                    return NotFound($"Subject with ID {subjectHour.SubjectId} not found.");
+                var subjectHourEntity = new SubjectHour()
+                {
+                    SubjectId = request.SubjectId,
+                    HoursInWeek = request.HoursInWeek,
+                    HoursInDay = request.HoursInDay
+                };
 
-                _context.SubjectHours.Add(subjectHour);
+                if (!_context.Subjects.Any(s => s.Id == subjectHourEntity.SubjectId))
+                    return NotFound($"Subject with ID {subjectHourEntity.SubjectId} not found.");
+
+                _context.SubjectHours.Add(subjectHourEntity);
             }
 
             _context.SaveChanges();
-            return Ok(subjectHours);
+            return Ok("Successfully created.");
         }
 
         [HttpPut("{id}")]

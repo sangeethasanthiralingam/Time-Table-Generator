@@ -99,8 +99,7 @@ namespace Time_Table_Generator.Controllers
                             {
                                 ClassId = classId,
                                 Subject = subject.Name,
-                                Teacher = teacher?.Name ?? "Unassigned",
-                                StartTime = startTimeSlot.ToString(@"hh\:mm"),
+                                Teacher = teacher?.User?.Displayname ?? "Unassigned",
                                 EndTime = endTimeSlot.ToString(@"hh\:mm")
                             });
 
@@ -255,7 +254,7 @@ namespace Time_Table_Generator.Controllers
 
                 worksheet.Cells[row, 1].Value = timetable.Class?.Name ?? "N/A";
                 worksheet.Cells[row, 2].Value = timetable.Batch?.Name ?? "N/A";
-                worksheet.Cells[row, 3].Value = timetable.Teacher?.Name ?? "N/A";
+                worksheet.Cells[row, 3].Value = timetable.Teacher?.User?.Displayname ?? "N/A";
                 worksheet.Cells[row, 4].Value = timetable.Subject?.Name ?? "N/A";
                 worksheet.Cells[row, 5].Value = timetable.StartTime.ToString("hh:mm tt");
                 worksheet.Cells[row, 6].Value = timetable.EndTime.ToString("hh:mm tt");

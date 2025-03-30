@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 namespace Time_Table_Generator.Controllers
 {
@@ -30,11 +31,17 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(ClassTeacher classTeacher)
+        public IActionResult Create(CreateClassTeacherRequest request)
         {
-            _context.ClassTeachers.Add(classTeacher);
+            var classTeacherEntity = new ClassTeacher()
+            {
+                TeacherId = request.TeacherId,
+                ClassId = request.ClassId,
+                BatchId = request.BatchId,
+            };
+            _context.ClassTeachers.Add(classTeacherEntity);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = classTeacher.Id }, classTeacher);
+            return CreatedAtAction(nameof(GetById), new { id = classTeacherEntity.Id }, classTeacherEntity);
         }
 
         [HttpPut("{id}")]

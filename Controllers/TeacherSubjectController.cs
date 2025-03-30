@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 namespace Time_Table_Generator.Controllers
 {
@@ -30,23 +31,30 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(IEnumerable<TeacherSubject> teacherSubjects)
+        public IActionResult Create(IEnumerable<CreateTeacherSubjectRequest> requests)
         {
-            if (teacherSubjects == null || !teacherSubjects.Any()) 
+            if (requests == null || !requests.Any()) 
                 return BadRequest("TeacherSubjects cannot be null or empty.");
 
-            foreach (var teacherSubject in teacherSubjects)
+            foreach (var request in requests)
             {
-                if (!_context.Teachers.Any(t => t.Id == teacherSubject.TeacherId))
-                    return NotFound($"Teacher with ID {teacherSubject.TeacherId} not found.");
-                if (!_context.Subjects.Any(s => s.Id == teacherSubject.SubjectId))
-                    return NotFound($"Subject with ID {teacherSubject.SubjectId} not found.");
+                var teacherSubjectEntity = new TeacherSubject()
+                {
+                    TeacherId = request.TeacherId,
+                    SubjectId = request.SubjectId,
+                    ClassId = request.ClassId
+                };
 
-                _context.TeacherSubjects.Add(teacherSubject);
+                if (!_context.Teachers.Any(t => t.Id == teacherSubjectEntity.TeacherId))
+                    return NotFound($"Teacher with ID {teacherSubjectEntity.TeacherId} not found.");
+                if (!_context.Subjects.Any(s => s.Id == teacherSubjectEntity.SubjectId))
+                    return NotFound($"Subject with ID {teacherSubjectEntity.SubjectId} not found.");
+
+                _context.TeacherSubjects.Add(teacherSubjectEntity);
             }
 
             _context.SaveChanges();
-            return Ok(teacherSubjects);
+            return Ok("Successfully created.");
         }
 
         [HttpPut("{id}")]

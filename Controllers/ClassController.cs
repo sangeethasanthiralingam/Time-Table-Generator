@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Time_Table_Generator.Models;
+using Time_Table_Generator.Models.Request;
 
 
 namespace Time_Table_Generator.Controllers
@@ -32,9 +33,13 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Class classEntity)
+        public IActionResult Create(CreateClassRequest request)
         {
-            if (classEntity == null) return BadRequest("Class cannot be null.");
+            if (request == null) return BadRequest("Class cannot be null.");
+            var classEntity = new Class()
+            {
+                Name = request.Name,
+            };
             _context.Classes.Add(classEntity);
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetById), new { id = classEntity.Id }, classEntity);

@@ -1,10 +1,8 @@
-namespace Time_Table_Generator.Models
+﻿namespace Time_Table_Generator.Models.Request
 {
-    public class SubjectHour
+    public class CreateSubjectHourRequest
     {
-        public int Id { get; set; }
         public required int SubjectId { get; set; }
-        public Subject? Subject { get; set; }
         public required int HoursInWeek { get; set; }
         public required int HoursInDay { get; set; }
     }
