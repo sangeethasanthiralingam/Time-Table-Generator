@@ -1,6 +1,6 @@
 namespace Time_Table_Generator.Models
 {
-    public class Event
+    public class EventModel 
     {
         public int Id { get; set; }
         public required string Name { get; set; } = string.Empty;

@@ -21,12 +21,16 @@ namespace Time_Table_Generator.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
+            if (!Summaries.Any())
+                return Enumerable.Empty<WeatherForecast>();
+
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
+            .Where(forecast => forecast.TemperatureC >= -20 && forecast.TemperatureC <= 55)
             .ToArray();
         }
     }
