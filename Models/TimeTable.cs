@@ -22,6 +22,11 @@ namespace Time_Table_Generator.Models
 
         public required DateTime StartTime { get; set; }
         public required DateTime EndTime { get; set; }
-        public required DateTime Date { get; set; }
+        public required string Day { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
