@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; // Add this for Include extension method
 using Time_Table_Generator.Models;
 using OfficeOpenXml; // Add this for Excel export functionality
+using System.Text.Json; // Add this for JsonSerializerOptions
+using System.Text.Json.Serialization; // Add this for ReferenceHandler
 
 namespace Time_Table_Generator.Controllers
 {
@@ -17,8 +19,19 @@ namespace Time_Table_Generator.Controllers
         }
 
         [HttpPost("Generate")]
-        public IActionResult GenerateTimeTable([FromBody] TimeTableRequest request)
+        public IActionResult GenerateTimeTable([FromBody] TimeTableRequest request, bool isGenerate = true)
         {
+            if (!isGenerate)
+            {
+                var timetables = _context.TimeTables
+               .Include(t => t.Class)
+               .Include(t => t.Batch)
+               .Include(t => t.Teacher)
+               .Include(t => t.Subject)
+               .ToList();
+                return Ok(timetables);
+            }
+
             if (request == null) return BadRequest("Invalid request body.");
 
             // Validate input
@@ -99,7 +112,7 @@ namespace Time_Table_Generator.Controllers
                             {
                                 ClassId = classId,
                                 Subject = subject.Name,
-                                Teacher = teacher?.User?.Displayname ?? "Unassigned",
+                                Teacher = _context.Users.Where(t => t.Id == teacher.Id).Select(x => x.Displayname).FirstOrDefault() ?? "Unassigned",
                                 EndTime = endTimeSlot.ToString(@"hh\:mm")
                             });
 
@@ -133,7 +146,7 @@ namespace Time_Table_Generator.Controllers
                     var availability = _context.Availabilities.FirstOrDefault(a => a.Type == location);
                     if (availability != null)
                     {
-                        availability.IsAvailable = false; 
+                        availability.IsAvailable = false;
                         _context.Availabilities.Update(availability);
                     }
                 }
@@ -160,9 +173,19 @@ namespace Time_Table_Generator.Controllers
 
             var timetable = query
                 .Include(t => t.Class)
-                .Include(t => t.Batch)
                 .Include(t => t.Teacher)
+                .ThenInclude(t => t.User)
                 .Include(t => t.Subject)
+                  .Select(t => new
+                  {
+                      ClassName = t.Class != null ? t.Class.Name : "N/A", // Replace ?. with conditional expression
+                      BatchName = t.Batch != null ? t.Batch.Name : "N/A", // Replace ?. with conditional expression
+                      TeacherName = t.Teacher != null && t.Teacher.User != null ? t.Teacher.User.Displayname : "N/A", // Replace ?. with conditional expression
+                      SubjectName = t.Subject != null ? t.Subject.Name : "N/A", // Replace ?. with conditional expression
+                      StartTime = t.StartTime.ToString("hh:mm tt"),
+                      EndTime = t.EndTime.ToString("hh:mm tt"),
+                      Date = t.Date.ToString("yyyy-MM-dd")
+                  })
                 .ToList();
 
             return Ok(timetable);
@@ -180,6 +203,15 @@ namespace Time_Table_Generator.Controllers
                 .Include(t => t.Class)
                 .Include(t => t.Batch)
                 .Include(t => t.Subject)
+                  .Select(t => new
+                  {
+                      ClassName = t.Class != null ? t.Class.Name : "N/A", // Replace ?. with conditional expression
+                      BatchName = t.Batch != null ? t.Batch.Name : "N/A", // Replace ?. with conditional expression
+                      SubjectName = t.Subject != null ? t.Subject.Name : "N/A", // Replace ?. with conditional expression
+                      StartTime = t.StartTime.ToString("hh:mm tt"),
+                      EndTime = t.EndTime.ToString("hh:mm tt"),
+                      Date = t.Date.ToString("yyyy-MM-dd")
+                  })
                 .ToList();
 
             if (!timetable.Any())
@@ -199,7 +231,18 @@ namespace Time_Table_Generator.Controllers
             var timetable = query
                 .Include(t => t.Class)
                 .Include(t => t.Teacher)
+                .ThenInclude(t => t.User)
                 .Include(t => t.Subject)
+                  .Select(t => new
+                  {
+                      ClassName = t.Class != null ? t.Class.Name : "N/A", // Replace ?. with conditional expression
+                      BatchName = t.Batch != null ? t.Batch.Name : "N/A", // Replace ?. with conditional expression
+                      TeacherName = t.Teacher != null && t.Teacher.User != null ? t.Teacher.User.Displayname : "N/A", // Replace ?. with conditional expression
+                      SubjectName = t.Subject != null ? t.Subject.Name : "N/A", // Replace ?. with conditional expression
+                      StartTime = t.StartTime.ToString("hh:mm tt"),
+                      EndTime = t.EndTime.ToString("hh:mm tt"),
+                      Date = t.Date.ToString("yyyy-MM-dd")
+                  })
                 .ToList();
 
             if (!timetable.Any())
@@ -215,11 +258,24 @@ namespace Time_Table_Generator.Controllers
                 .Include(t => t.Class)
                 .Include(t => t.Batch)
                 .Include(t => t.Teacher)
+                .ThenInclude(t => t.User) // Ensure Teacher.User is included
                 .Include(t => t.Subject)
+                .Select(t => new
+                {
+                    ClassName = t.Class != null ? t.Class.Name : "N/A", // Replace ?. with conditional expression
+                    BatchName = t.Batch != null ? t.Batch.Name : "N/A", // Replace ?. with conditional expression
+                    TeacherName = t.Teacher != null && t.Teacher.User != null ? t.Teacher.User.Displayname : "N/A", // Replace ?. with conditional expression
+                    SubjectName = t.Subject != null ? t.Subject.Name : "N/A", // Replace ?. with conditional expression
+                    StartTime = t.StartTime.ToString("hh:mm tt"),
+                    EndTime = t.EndTime.ToString("hh:mm tt"),
+                    Date = t.Date.ToString("yyyy-MM-dd")
+                })
                 .ToList();
 
-            return Ok(timetables);
+            return Ok(timetables); // Return simplified structure
         }
+
+
 
         [HttpGet("Export")]
         private IActionResult ExportTimeTables(IQueryable<TimeTable> query, string fileName)
@@ -252,10 +308,10 @@ namespace Time_Table_Generator.Controllers
                 var row = i + 2;
                 var timetable = timetables[i];
 
-                worksheet.Cells[row, 1].Value = timetable.Class?.Name ?? "N/A";
-                worksheet.Cells[row, 2].Value = timetable.Batch?.Name ?? "N/A";
-                worksheet.Cells[row, 3].Value = timetable.Teacher?.User?.Displayname ?? "N/A";
-                worksheet.Cells[row, 4].Value = timetable.Subject?.Name ?? "N/A";
+                worksheet.Cells[row, 1].Value = timetable.Class != null ? timetable.Class.Name : "N/A"; // Replace ?. with conditional expression
+                worksheet.Cells[row, 2].Value = timetable.Batch != null ? timetable.Batch.Name : "N/A"; // Replace ?. with conditional expression
+                worksheet.Cells[row, 3].Value = timetable.Teacher != null && timetable.Teacher.User != null ? timetable.Teacher.User.Displayname : "N/A"; // Replace ?. with conditional expression
+                worksheet.Cells[row, 4].Value = timetable.Subject != null ? timetable.Subject.Name : "N/A"; // Replace ?. with conditional expression
                 worksheet.Cells[row, 5].Value = timetable.StartTime.ToString("hh:mm tt");
                 worksheet.Cells[row, 6].Value = timetable.EndTime.ToString("hh:mm tt");
                 worksheet.Cells[row, 7].Value = timetable.Date.ToString("yyyy-MM-dd");
@@ -266,6 +322,8 @@ namespace Time_Table_Generator.Controllers
 
             return File(fileContent, contentType, fileName);
         }
+
+
 
         [HttpGet("StudentClassBatch/{studentId}")]
         public IActionResult GetStudentClassBatchTimeTable(int studentId)
@@ -286,7 +344,7 @@ namespace Time_Table_Generator.Controllers
                 .Where(t => t.BatchId == student.Batch.Id)
                 .ToList();
 
-            return Ok(new
+            return JsonWithPreservedReferences(new
             {
                 Student = new
                 {
@@ -295,7 +353,19 @@ namespace Time_Table_Generator.Controllers
                     Batch = student.Batch.Name
                 },
                 TimeTable = timetable
-            });
+            }); // Use custom JSON result
+        }
+
+
+
+        private JsonResult JsonWithPreservedReferences(object data)
+        {
+            var options = new JsonSerializerOptions
+            {
+                ReferenceHandler = ReferenceHandler.Preserve,
+                WriteIndented = true
+            };
+            return new JsonResult(data, options);
         }
     }
 
