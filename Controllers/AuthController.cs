@@ -52,6 +52,31 @@ namespace Time_Table_Generator.Controllers
             _context.Users.Add(newUser);
             _context.SaveChanges();
 
+            // Create teacher or student record based on user role
+            if (newUser.UserType == UserType.Teacher)
+            {
+                var teacher = new Teacher
+                {
+                    UserId = newUser.Id
+                };
+                _context.Teachers.Add(teacher);
+                _context.SaveChanges();
+            }
+            else if (newUser.UserType == UserType.Student)
+            {
+                var student = new Student
+                {
+                    UserId = newUser.Id,
+                    // Set default values for required fields
+                    RollNumber = request.RollNumber ?? string.Empty,
+                    RegistrationNumber = request.RegistrationNumber ?? string.Empty,
+                    // BatchId will need to be provided or set to a default value if required
+                    BatchId = request.BatchId ?? 0 // Assuming 0 is an acceptable default
+                };
+                _context.Students.Add(student);
+                _context.SaveChanges();
+            }
+
             // Respond with the newly created user
             var response = new ResponseResult<object>(newUser);
             return Ok(response);
