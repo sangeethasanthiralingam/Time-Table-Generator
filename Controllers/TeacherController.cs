@@ -21,37 +21,44 @@ namespace Time_Table_Generator.Controllers
         public IActionResult GetAll()
         {
             var teachers = _context.Teachers.ToList();
-            return Ok(teachers);
+            return Ok(new ResponseResult<object>(teachers));
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
             var teacher = _context.Teachers.Find(id);
-            if (teacher == null) return NotFound();
-            return Ok(teacher);
+            if (teacher == null) 
+                return NotFound(new ResponseResult<object>(new[] { "Teacher not found." }));
+            
+            return Ok(new ResponseResult<object>(teacher));
         }
 
         [HttpPost]
         public IActionResult Create(CreateTeacherRequest request)
         {
-            if (request == null) return BadRequest("Teacher cannot be null.");
+            if (request == null) 
+                return BadRequest(new ResponseResult<object>(new[] { "Teacher cannot be null." }));
 
             var teacherEntity = new Teacher()
             {
                 UserId = request.UserId,
             };
+
             _context.Teachers.Add(teacherEntity);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = teacherEntity.Id }, teacherEntity);
+            return CreatedAtAction(nameof(GetById), new { id = teacherEntity.Id }, new ResponseResult<object>(teacherEntity));
         }
-
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, Teacher teacher)
         {
-            if (teacher == null) return BadRequest("Teacher cannot be null.");
-            if (id != teacher.Id) return BadRequest();
+            if (teacher == null) 
+                return BadRequest(new ResponseResult<object>(new[] { "Teacher cannot be null." }));
+            
+            if (id != teacher.Id) 
+                return BadRequest(new ResponseResult<object>(new[] { "ID mismatch." }));
+
             _context.Teachers.Update(teacher);
             _context.SaveChanges();
             return NoContent();
@@ -61,7 +68,9 @@ namespace Time_Table_Generator.Controllers
         public IActionResult Delete(int id)
         {
             var teacher = _context.Teachers.Find(id);
-            if (teacher == null) return NotFound();
+            if (teacher == null) 
+                return NotFound(new ResponseResult<object>(new[] { "Teacher not found." }));
+            
             _context.Teachers.Remove(teacher);
             _context.SaveChanges();
             return NoContent();
@@ -83,8 +92,10 @@ namespace Time_Table_Generator.Controllers
                     })
                     .FirstOrDefault();
 
-                if (teacher == null) return NotFound();
-                return Ok(teacher);
+                if (teacher == null) 
+                    return NotFound(new ResponseResult<object>(new[] { "Teacher not found." }));
+                
+                return Ok(new ResponseResult<object>(teacher));
             }
             else
             {
@@ -98,7 +109,7 @@ namespace Time_Table_Generator.Controllers
                     })
                     .ToList();
 
-                return Ok(teachers);
+                return Ok(new ResponseResult<object>(teachers));
             }
         }*/
     }
