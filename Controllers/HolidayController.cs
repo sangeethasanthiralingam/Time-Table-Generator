@@ -6,7 +6,7 @@ namespace Time_Table_Generator.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] 
+    [Authorize]
     public class HolidayController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -20,42 +20,54 @@ namespace Time_Table_Generator.Controllers
         public IActionResult GetAll()
         {
             var holidays = _context.Holidays.ToList();
-            return Ok(holidays);
+            return Ok(new ResponseResult<object>(holidays));
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
             var holiday = _context.Holidays.Find(id);
-            if (holiday == null) return NotFound();
-            return Ok(holiday);
+            if (holiday == null)
+                return NotFound(new ResponseResult<object>(new[] { "Holiday not found." }));
+
+            return Ok(new ResponseResult<object>(holiday));
         }
 
         [HttpPost]
         public IActionResult Create(Holiday holiday)
         {
+            if (holiday == null)
+                return BadRequest(new ResponseResult<object>(new[] { "Holiday cannot be null." }));
+
             _context.Holidays.Add(holiday);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = holiday.Id }, holiday);
+
+            return CreatedAtAction(nameof(GetById), new { id = holiday.Id }, new ResponseResult<object>(holiday));
         }
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, Holiday holiday)
         {
-            if (id != holiday.Id) return BadRequest();
+            if (holiday == null || id != holiday.Id)
+                return BadRequest(new ResponseResult<object>(new[] { "Invalid request or ID mismatch." }));
+
             _context.Holidays.Update(holiday);
             _context.SaveChanges();
-            return NoContent();
+
+            return Ok(new ResponseResult<object>(holiday));
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var holiday = _context.Holidays.Find(id);
-            if (holiday == null) return NotFound();
+            if (holiday == null)
+                return NotFound(new ResponseResult<object>(new[] { "Holiday not found." }));
+
             _context.Holidays.Remove(holiday);
             _context.SaveChanges();
-            return NoContent();
+
+            return Ok(new ResponseResult<object>("Holiday deleted successfully."));
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Time_Table_Generator.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] 
+    [Authorize]
     public class StudentController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -21,21 +21,24 @@ namespace Time_Table_Generator.Controllers
         public IActionResult GetAll()
         {
             var students = _context.Students.ToList();
-            return Ok(students);
+            return Ok(new ResponseResult<object>(students));
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
             var student = _context.Students.Find(id);
-            if (student == null) return NotFound();
-            return Ok(student);
+            if (student == null)
+                return NotFound(new ResponseResult<object>(new[] { "Student not found." }));
+
+            return Ok(new ResponseResult<object>(student));
         }
 
         [HttpPost]
         public IActionResult Create(CreateStudentRequest request)
         {
-            if (request == null) return BadRequest("Student cannot be null.");
+            if (request == null)
+                return BadRequest(new ResponseResult<object>(new[] { "Student cannot be null." }));
 
             var studentEntity = new Student()
             {
@@ -44,29 +47,36 @@ namespace Time_Table_Generator.Controllers
                 RollNumber = request.RollNumber,
                 RegistrationNumber = request.RegistrationNumber,
             };
+
             _context.Students.Add(studentEntity);
             _context.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = studentEntity.Id }, studentEntity);
+
+            return CreatedAtAction(nameof(GetById), new { id = studentEntity.Id }, new ResponseResult<object>(studentEntity));
         }
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, Student student)
         {
-            if (student == null) return BadRequest("Student cannot be null.");
-            if (id != student.Id) return BadRequest();
+            if (student == null || id != student.Id)
+                return BadRequest(new ResponseResult<object>(new[] { "Invalid student data or ID mismatch." }));
+
             _context.Students.Update(student);
             _context.SaveChanges();
-            return NoContent();
+
+            return Ok(new ResponseResult<object>(student));
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var student = _context.Students.Find(id);
-            if (student == null) return NotFound();
+            if (student == null)
+                return NotFound(new ResponseResult<object>(new[] { "Student not found." }));
+
             _context.Students.Remove(student);
             _context.SaveChanges();
-            return NoContent();
+
+            return Ok(new ResponseResult<object>("Student deleted successfully."));
         }
     }
 }
