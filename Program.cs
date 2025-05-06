@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Time_Table_Generator.Models;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Time_Table_Generator
 {
@@ -27,7 +31,7 @@ namespace Time_Table_Generator
             });
 
             // Add CORS policy
-       /*     builder.Services.AddCors(options =>
+          builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAllOrigins", policy =>
                 {
@@ -35,11 +39,39 @@ namespace Time_Table_Generator
                             .AllowAnyMethod()
                             .AllowAnyHeader();
                 });
-            });*/
+            });
+
+        // Load configuration for JWT
+        var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+        // Register services
+        builder.Services.AddControllers();
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+                new MySqlServerVersion(new Version(8, 0, 25))));
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new ArgumentNullException("JWT Key cannot be null")))
+                };
+            });
 
 
             // Add services
-           /* builder.Services.AddHttpsRedirection(options =>
+            builder.Services.AddHttpsRedirection(options =>
             {
                 options.HttpsPort = 7289; // Ensure HTTPS redirection is configured
             });
@@ -47,21 +79,19 @@ namespace Time_Table_Generator
             // Add AppDbContext to the service container with MySQL
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                    new MySqlServerVersion(new Version(8, 0, 25)))); */// Specify MySQL version
-
-            
-
-            // Apply migrations at startup
-          /*  using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                dbContext.Database.Migrate(); // Ensure migrations are applied
-            }*/
+                    new MySqlServerVersion(new Version(8, 0, 25)))); // Specify MySQL version
 
             var app = builder.Build();
 
+            // Apply migrations at startup
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                dbContext.Database.Migrate(); // Ensure migrations are applied
+            }
+
             // Configure the HTTP request pipeline.
-            /*      if (app.Environment.IsDevelopment())
+                 if (app.Environment.IsDevelopment())
                   {
                       app.UseSwagger();
                       app.UseSwaggerUI(c =>
@@ -75,13 +105,13 @@ namespace Time_Table_Generator
                   if (!app.Environment.IsDevelopment())
                   {
                       app.UseHsts();
-                  }*/
+                  }
 
             // Use CORS
-            /*   app.UseCors("AllowAllOrigins");*/
+               app.UseCors("AllowAllOrigins");
 
             // Add a redirect for the root URL
-            /*     app.MapGet("/", () => Results.Redirect("/swagger"));*/
+                app.MapGet("/", () => Results.Redirect("/swagger"));
 
             if (app.Environment.IsDevelopment())
             {
@@ -90,7 +120,9 @@ namespace Time_Table_Generator
             }
 
             app.UseHttpsRedirection(); // Enforce HTTPS redirection
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.MapControllers();
 
             app.Run();

@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Time_Table_Generator.Models;
 using Time_Table_Generator.Models.Request;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Time_Table_Generator.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] 
     public class ClassController : ControllerBase
     {
         private readonly AppDbContext _context;

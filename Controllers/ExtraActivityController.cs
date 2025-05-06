@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Time_Table_Generator.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] 
     public class ExtraActivityController : ControllerBase
     {
         private readonly AppDbContext _context;

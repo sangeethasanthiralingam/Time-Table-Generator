@@ -12,8 +12,8 @@ using Time_Table_Generator.Models;
 namespace Time_Table_Generator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250330090303_update1")]
-    partial class update1
+    [Migration("20250331124824_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

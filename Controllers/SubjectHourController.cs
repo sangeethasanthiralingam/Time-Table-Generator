@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Time_Table_Generator.Models;
 using Time_Table_Generator.Models.Request;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Time_Table_Generator.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] 
     public class SubjectHourController : ControllerBase
     {
         private readonly AppDbContext _context;

@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore; // Add this for Include extension method
+using Microsoft.EntityFrameworkCore;
 using Time_Table_Generator.Models;
-using OfficeOpenXml; // Add this for Excel export functionality
-using System.Text.Json; // Add this for JsonSerializerOptions
-using System.Text.Json.Serialization; // Add this for ReferenceHandler
+using OfficeOpenXml;
+using System.Text.Json; 
+using System.Text.Json.Serialization; 
+using Microsoft.AspNetCore.Authorization;
 
 namespace Time_Table_Generator.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] 
     public class TimeTableController : ControllerBase
     {
         private readonly AppDbContext _context;

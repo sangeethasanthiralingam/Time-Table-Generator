@@ -5,7 +5,7 @@
 namespace Time_Table_Generator.Migrations
 {
     /// <inheritdoc />
-    public partial class update1 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
